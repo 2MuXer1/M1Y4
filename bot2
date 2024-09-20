@@ -1,0 +1,54 @@
+import discord, random
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='$', intents=intents)
+
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print(f'We have logged in as {bot.user} (ID: {self.user.id})')
+        print("------")
+        async def on_member_join(self, member):
+            guild = member.guild
+            if guild.system_channel is not None:
+                to_send = f'Welcome {member.mention} to {guild.name}!'
+                await guild.system_channel.send(to_send)
+
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send(f'Привет! Я бот {bot.user}!', mention_author=True)
+
+@bot.command()
+async def add(ctx, left: int, right: int):
+    await ctx.send(left + right)#
+
+@bot.command()
+async def roll(ctx, dice: str):
+    try:
+        rolls, limit = map(int, dice.split('d'))
+    except Exception:
+        await ctx.send('Format has to be in NdN!')
+        return
+
+    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+    await ctx.send(result)
+
+@bot.command()
+async def HELP(ctx):
+    await ctx.send(f"Я умею\r\nadd = считывать два числа\r\nheh = напишу (хех) пять раза, если не задашь другое число\r\nchoose = напиши варианты, между которыми выбрать через запятую, и я рандомно выберу из них\r\nroll = Пока что не реализовано")
+
+@bot.command()
+async def heh(ctx, count_heh = 5):
+    await ctx.send("he" * count_heh)
+
+@bot.command(description='For when you wanna settle the score some other way')
+async def choose(ctx, *choices: str):
+    await ctx.send(random.choice(choices))
+
+intents = discord.Intents.default()
+intents.members = True
+client = MyClient(intents=intents)
+bot.run("key")
